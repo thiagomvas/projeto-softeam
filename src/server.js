@@ -88,8 +88,8 @@ app.get('/api/data/classes/:id', (req, res) => {
   });
 });
 
-app.get('/api/data/students', (req, res) => {
-  const query = 'SELECT * FROM students';
+app.get('/api/data/users', (req, res) => {
+  const query = 'SELECT * FROM users';
   
   db.all(query, [], (err, rows) => {
     if (err) {
