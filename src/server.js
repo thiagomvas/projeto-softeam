@@ -21,7 +21,6 @@ const db = new sqlite3.Database('src/database.db');
 app.post('/api/auth/login', (req, res) => {
   var { username, password } = req.body;
   password = hashString(password);
-  console.log(password);
   const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
 
   db.get(query, [username, password], (err, row) => {

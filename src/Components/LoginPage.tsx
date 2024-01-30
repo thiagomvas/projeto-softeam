@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -11,10 +13,16 @@ const LoginPage: React.FC = () => {
   const handleLogin = () => {
     axios.post('http://localhost:3001/api/auth/login', { username: username, password: password })
       .then(response => {
-        if (response.data.success) {
-          console.log('Login successful!');
-        } else {
-          console.log('Login failed. Please check your credentials.');
+        let success = response.data.success;
+
+        if(success)
+        {
+          localStorage.setItem('id', response.data.id);
+          navigate('/register'); // Placeholder
+        }
+        else
+        {
+          setError('Login failed. Please try again.');
         }
       })
       .catch(error => {
