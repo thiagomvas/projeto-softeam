@@ -29,7 +29,7 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     if (row) {
-      res.json({ success: true, message: 'Login successful!' });
+      res.json({ success: true, message: 'Login successful!' , token: row.password});
     } else {
       res.json({ success: false, message: 'Login failed. Please check your credentials.' });
     }
@@ -87,14 +87,25 @@ app.get('/api/data/classes/:id', (req, res) => {
   });
 });
 
-app.get('/api/data/users', (req, res) => {
-  const query = 'SELECT * FROM users';
-  
-  db.all(query, [], (err, rows) => {
+app.get('/api/data/users/', (req, res) => {
+  const token = req.headers.authorization; // Assuming the token is in the Authorization header
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const query = 'SELECT * FROM users WHERE password = ?'; // Replace 'token' with the actual column name for the token
+
+  db.get(query, [token], (err, row) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+
+    if (row) {
+      res.json(row);
+    } else {
+      res.status(404).json({ error: 'User not found for the provided token.' });
+    }
   });
 });
 
