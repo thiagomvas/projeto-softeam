@@ -1,0 +1,19 @@
+.class-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+    background-color: #443C68;
+    width: 60%;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.class-display:hover {
+    background-color: #5E548C;
+}

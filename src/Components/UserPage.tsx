@@ -1,36 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useLocation } from 'react-router-dom';
-import UserDTO from '../DTOs/UserDTO';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
+import UserDTO from "../DTOs/UserDTO";
 
+import "../Styles/UserPage.css";
+import { mapResponseToClassDTO, mapResponseToDisciplineDTO, mapResponseToUserDTO } from "../utils";
+import ClassDTO from "../DTOs/ClassDTO";
+import DisciplineDTO from "../DTOs/DisciplineDTO";
 
 const UserPage: React.FC = () => {
   const location = useLocation();
   const [userDTO, setUserDTO] = useState<UserDTO | null>(null);
+  const [enrollments, setEnrollments] = useState<ClassDTO[]>([]);
+  const [disciplines, setDisciplines] = useState<DisciplineDTO[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Replace 'your-api-base-url' with the actual base URL of your API
-        const response = await axios.get(`http://localhost:3001/api/data/users`, { headers: { Authorization: `${location.state.userId}` }});
+        const response = await axios.get(
+          `http://localhost:3001/api/data/users`,
+          { headers: { Authorization: `${location.state.token}` } }
+        );
         const responseData = response.data;
-        console.log(responseData);
+        const mappedUserDTO: UserDTO = mapResponseToUserDTO(responseData);
 
-        // Map the response data to UserDTO
-        const mappedUserDTO: UserDTO = {
-          id: responseData.id,
-          name: responseData.fullname,
-          password: responseData.password,
-          email: responseData.email,
-          role: responseData.role,
-          phonenumber: responseData.phonenumber,
-          address: responseData.address,
-        };
-
-        // Set the UserDTO in the state
         setUserDTO(mappedUserDTO);
+
+        const enrollmentsResponse = await axios.get(
+          `http://localhost:3001/api/data/userenrollments/${mappedUserDTO.id}`
+        );
+        const enrollmentsData = enrollmentsResponse.data;
+        
+        const mappedEnrollments = enrollmentsData.map((enrollment: any) => mapResponseToClassDTO(enrollment));
+
+
+        const fetchDisciplines = mappedEnrollments.map(async (enrollment: { disciplineId: any; }) => {
+          const disciplineResponse = await axios.get(
+            `http://localhost:3001/api/data/discipline/${enrollment.disciplineId}`
+          );
+          const disciplineData = disciplineResponse.data;
+          return mapResponseToDisciplineDTO(disciplineData);
+        });
+  
+        const loadedDisciplines = await Promise.all(fetchDisciplines);
+        setDisciplines(loadedDisciplines);
+        setEnrollments(mappedEnrollments);
+
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error("Error fetching user data:", error);
       }
     };
 
@@ -39,12 +56,19 @@ const UserPage: React.FC = () => {
 
   return (
     <div>
-      <h2>User Page</h2>
       {userDTO ? (
         <>
-          <h3>User ID: {userDTO.id}</h3>
-          <p>Name: {userDTO.name}</p>
-          <p>Email: {userDTO.email}</p>
+          <h1>Olá, {userDTO.fullname}!</h1>
+
+          <h2>Suas Turmas:</h2>
+          <div>
+            {enrollments.map((enrollment, index) => (
+              <div className="class-display" key={index}>
+                <p>{enrollment.disciplineId} | {disciplines[index].name}</p>
+                <p>{enrollment.roomNumber} | {enrollment.classTimes}</p>
+                </div>
+            ))}
+          </div>
         </>
       ) : (
         <p>Loading user data...</p>
