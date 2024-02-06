@@ -70,6 +70,43 @@ app.get('/api/data/classes', (req, res) => {
   });
 });
 
+
+app.get('/api/data/userenrollments/:id', (req, res) => {
+  const studentId = req.params.id;
+  const query = 'SELECT classes.* FROM classes JOIN classEnrollments ON classes.id = classEnrollments.classId WHERE classEnrollments.studentId = ?';
+
+  db.all(query, [studentId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    console.log(`Called enrollments for ID: ${studentId}, got response \n ${row}`);
+    res.json(row);
+  });
+});
+
+
+app.get('/api/data/discipline/:id', (req, res) => {
+  const classId = req.params.id;
+  const query = 'SELECT * FROM disciplines WHERE id = ?';
+
+  db.get(query, [classId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    res.json(row);
+  });
+});
+
+
 app.get('/api/data/classes/:id', (req, res) => {
   const classId = req.params.id;
   const query = 'SELECT * FROM classes WHERE id = ?';
