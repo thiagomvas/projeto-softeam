@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
           console.log(`Login successful.`);
           navigate('/userpage', {
             state: {
-              userId: response.data.token,
+              token: response.data.token,
             }
           });
         } else {
