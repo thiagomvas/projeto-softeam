@@ -1,6 +1,6 @@
 type UserDTO = {
     id: string;
-    name: string;
+    fullname: string;
     password: string;
     email: string;
     role: string;

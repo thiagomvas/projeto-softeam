@@ -1,6 +1,9 @@
 type ClassDTO = {
-    id: string;
-    name: string;
+    id: number;
+    disciplineId: string;
+    professorId: number;
+    classTimes: string;
+    roomNumber: string;
 }
 
 export default ClassDTO;
