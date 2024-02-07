@@ -1,3 +1,5 @@
+//turmapage.tsx
+
 import React, { useState, useEffect } from 'react';
 import sqlite3 from 'sqlite3';
 
@@ -10,15 +12,24 @@ interface Turma {
   nome: string;
 }
 
-const TurmasComponent = () => {
+const TurmasComponent: React.FC = () => {
+
   const [turmasData, setTurmasData] = useState<Turma[]>([]);
+
 
   useEffect(() => {
     const fetchDataFromDatabase = async () => {
       const db = new sqlite3.Database('src/database.db');
 
-      const query =
-        'SELECT classes.id, disciplines.name AS componente, users.fullname AS nome, classes.classtimes AS horario, classes.RoomNumber AS local FROM classes INNER JOIN user_classes ON classes.id = user_classes.classid INNER JOIN users ON users.id = user_classes.userId INNER JOIN disciplines ON classes.disciplineId = disciplines.id WHERE users.username = "nome_do_usuario';
+      const query = `
+      SELECT classes.id, disciplines.name AS componente, users.fullname AS nome, 
+      classes.classtimes AS horario, classes.RoomNumber AS local 
+      FROM classes 
+      INNER JOIN user_classes ON classes.id = user_classes.classid 
+      INNER JOIN users ON users.id = user_classes.userId 
+      INNER JOIN disciplines ON classes.disciplineId = disciplines.id 
+      WHERE users.username = "thiago"
+    `;
 
       const rows: unknown[] = await new Promise((resolve, reject) => {
         db.all(query, [], (err, rows) => {
@@ -47,6 +58,7 @@ const TurmasComponent = () => {
 
       setTurmasData(newData);
       db.close();
+      
     };
 
     fetchDataFromDatabase();
@@ -94,3 +106,4 @@ const TurmasComponent = () => {
 };
 
 export default TurmasComponent;
+
