@@ -145,6 +145,23 @@ app.get('/api/data/users/', (req, res) => {
     }
   });
 });
+app.get('/api/data/userfullname/:id', (req, res) => {
+  const classId = req.params.id;
+  const query = 'SELECT fullname FROM users WHERE id = ?';
+
+  db.get(query, [classId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    console.log(row);
+    res.json(row);
+  });
+});
+
 
 app.get('/api/tables', (req, res) => {
   const query = "SELECT name FROM sqlite_master WHERE type='table'";
