@@ -1,109 +1,113 @@
-//turmapage.tsx
-
 import React, { useState, useEffect } from 'react';
-import sqlite3 from 'sqlite3';
-
-interface Turma {
-  id: number;
-  componente: string;
-  professor: string;
-  horario: string;
-  local: string;
-  nome: string;
-}
+import axios from "axios";
+import { useLocation } from "react-router-dom";
+import { mapResponseToClassDTO, mapResponseToDisciplineDTO, mapResponseToUserDTO } from "./utils";
+import ClassDTO from "./DTOs/ClassDTO";
+import DisciplineDTO from "./DTOs/DisciplineDTO";
+import UserDTO from './DTOs/UserDTO';
 
 const TurmasComponent: React.FC = () => {
-
-  const [turmasData, setTurmasData] = useState<Turma[]>([]);
-
+  const location = useLocation();
+  const [classesByDiscipline, setClassesByDiscipline] = useState<{ [key: string]: ClassDTO[] }>({});
+  const [participantsByClass, setParticipantsByClass] = useState<{ [key: string]: UserDTO[] }>({});
+  const [disciplines, setDisciplines] = useState<DisciplineDTO[]>([]);
 
   useEffect(() => {
-    const fetchDataFromDatabase = async () => {
-      const db = new sqlite3.Database('src/database.db');
-
-      const query = `
-      SELECT classes.id, disciplines.name AS componente, users.fullname AS nome, 
-      classes.classtimes AS horario, classes.RoomNumber AS local 
-      FROM classes 
-      INNER JOIN user_classes ON classes.id = user_classes.classid 
-      INNER JOIN users ON users.id = user_classes.userId 
-      INNER JOIN disciplines ON classes.disciplineId = disciplines.id 
-      WHERE users.username = "thiago"
-    `;
-
-      const rows: unknown[] = await new Promise((resolve, reject) => {
-        db.all(query, [], (err, rows) => {
-          if (err) {
-            reject(err);
-          }
-          resolve(rows);
+    const fetchData = async () => {
+      try {
+        const disciplinesResponse = await axios.get(
+          `http://localhost:3001/api/data/disciplines`,
+          { headers: { Authorization: `${location.state.token}` } }
+        );
+        const disciplinesData = disciplinesResponse.data;
+        const mappedDisciplines: DisciplineDTO[] = disciplinesData.map((disciplineData: any) =>
+          mapResponseToDisciplineDTO(disciplineData)
+        );
+  
+        setDisciplines(mappedDisciplines);
+  
+        const fetchClassesAndParticipants = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
+          const classesResponse = await axios.get(
+            `http://localhost:3001/api/data/classes/${discipline.id}`
+          );
+          const classesData = classesResponse.data;
+          const mappedClasses: ClassDTO[] = classesData.map((classData: any) =>
+            mapResponseToClassDTO(classData)
+          );
+  
+          const fetchParticipantsByClass = mappedClasses.map(async (classItem: ClassDTO) => {
+            const participantsResponse = await axios.get(
+              `http://localhost:3001/api/data/participants/${classItem.id}`
+            );
+            const participantsData = participantsResponse.data;
+            const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
+              mapResponseToUserDTO(participantData)
+            );
+  
+            return { [classItem.id]: mappedParticipants };
+          });
+  
+          const loadedParticipantsByClass = await Promise.all(fetchParticipantsByClass);
+          const mergedParticipantsByClass = Object.assign({}, ...loadedParticipantsByClass);
+          setParticipantsByClass((prevParticipants) => ({
+            ...prevParticipants,
+            ...mergedParticipantsByClass
+          }));
+  
+          return { [discipline.id]: mappedClasses };
         });
-      });
-
-      const typedRows: Turma[] = rows as Turma[];
-
-      const newData = await Promise.all(
-        typedRows.map(async (row) => {
-          const professor = await getProfessorName(db, row.nome);
-          return {
-            id: row.id,
-            componente: row.componente,
-            professor: professor || 'N/A',
-            horario: row.horario,
-            local: row.local,
-            nome: row.nome, 
-          };
-        })
-      );
-
-      setTurmasData(newData);
-      db.close();
-      
+  
+        const loadedClassesByDiscipline = await Promise.all(fetchClassesAndParticipants);
+        const mergedClassesByDiscipline = Object.assign({}, ...loadedClassesByDiscipline);
+        setClassesByDiscipline(mergedClassesByDiscipline);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
-
-    fetchDataFromDatabase();
-  }, []);
-
-  const getProfessorName = async (db: any, professorId: any): Promise<string | null> => {
-    const professorQuery = 'SELECT name FROM professors WHERE id = ?';
-    return new Promise((resolve, reject) => {
-      db.get(professorQuery, [professorId], (err: any, professorRow: { name: string | null }) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(professorRow ? professorRow.name : null);
-      });
-    });
-  };
+  
+    fetchData();
+  }, [location.state.token]);
+  
 
   return (
     <div>
-      <h1>Turmas do Semestre</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Componente Curricular</th>
-            <th>Professor</th>
-            <th>Horário</th>
-            <th>Local</th>
-          </tr>
-        </thead>
-        <tbody>
-          {turmasData.map((turma) => (
-            <tr key={turma.id}>
-              <td>{turma.id}</td>
-              <td>{turma.componente}</td>
-              <td>{turma.professor}</td>
-              <td>{turma.horario}</td>
-              <td>{turma.local}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {disciplines.map((discipline) => (
+        <div key={discipline.id}>
+          <h1>Turmas de {discipline.name}</h1>
+          <div>
+          {classesByDiscipline[discipline.id]?.map((classItem) => (
+                <div key={classItem.id}>
+                  <p>Id:{classItem.id}</p>
+                  <p>Professor:{classItem.professorId}</p>
+                  <p>Horário:{classItem.classTimes}</p>
+                  <p>Sala:{classItem.roomNumber}</p>
+                  <p>Departamento:{discipline.department}</p>
+                </div>
+              ))}
+          </div>
+          <h1>Participantes</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Nome</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {participantsByClass[discipline.id]?.map((participant) => (
+                <tr key={participant.id}>
+                  <td>{participant.id}</td>
+                  <td>{participant.fullname}</td>
+                  <td>{participant.email}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
     </div>
   );
 };
 
 export default TurmasComponent;
-
