@@ -145,7 +145,7 @@ app.get('/api/data/users/', (req, res) => {
   });
 });
 
-app.put('/api/data/users/:id', (req, res) => {
+app.put('/api/data/users/:id', async (req, res) => {
   const token = req.headers.authorization;
 
   if (!token) {
@@ -153,12 +153,25 @@ app.put('/api/data/users/:id', (req, res) => {
   }
 
   const userId = req.params.id;
-  var { fullname, password, email, role, phonenumber, address } = req.body;
+  const { fullname, password, email, role, phonenumber, address } = req.body;
 
-  const hashedPassword = hashString(password);
-
+  // Retrieve the current hashed password from the database
+  const getCurrentPasswordQuery = 'SELECT password FROM users WHERE id=?';
+  const currentPasswordRow = await new Promise((resolve, reject) => {
+    db.get(getCurrentPasswordQuery, [userId], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+  // Check if the new password is not an empty string
+  const newPassword = password !== currentPasswordRow.password ? hashString(password) : currentPasswordRow.password;
+  console.log(`password: ${password}, new password: ${newPassword}, current password row: ${currentPasswordRow.password}`);
+  // Update the user with the new hashed password
   const updateQuery = 'UPDATE users SET fullname=?, password=?, email=?, role=?, phonenumber=?, address=? WHERE id=?';
-  const queryParams = [fullname, hashedPassword, email, role, phonenumber, address, userId];
+  const queryParams = [fullname, newPassword, email, role, phonenumber, address, userId];
 
   db.run(updateQuery, queryParams, function (err) {
     if (err) {
@@ -171,8 +184,11 @@ app.put('/api/data/users/:id', (req, res) => {
       res.status(404).json({ error: 'User not found for the provided ID.' });
     }
   });
+
   console.log(`Called PUT Users with ID: ${userId}, got response \n ${JSON.stringify(req.body, null, 2)}`);
 });
+
+
 
 app.delete('/api/data/users/:id', (req, res) => {
   const token = req.headers.authorization;

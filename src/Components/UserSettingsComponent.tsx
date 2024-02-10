@@ -28,6 +28,7 @@ const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
   const [role, setRole] = useState<string>(user.role);
   const [phonenumber, setPhonenumber] = useState<string>(user.phonenumber);
   const [address, setAddress] = useState<string>(user.address);
+  const [changedPassword, setChangedPassword] = useState<boolean>(false);
 
   const confirmDelete = async () => {
     if (window.confirm('Are you sure you want to delete your account?')) {
@@ -41,12 +42,15 @@ const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
     }
   }
 
+
+
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     var newUser = {
       id: user.id,
       fullname: fullname,
-      password: password === '' ? user.password : password,
+      password: password,
       email: email,
       role: role,
       phonenumber: phonenumber,
@@ -83,7 +87,7 @@ const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
         <LineDivider height={1} />
         <label>
           Password:
-          <input className='input-field'  type="password" onChange={(e) => setPassword(e.target.value)} />
+          <input className='input-field'  type="password" onChange={e => setPassword(e.target.value)} />
         </label>
         <br />
         <ActionButton onClick={handleSubmit}>Submit</ActionButton>
