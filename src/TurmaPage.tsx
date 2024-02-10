@@ -10,7 +10,7 @@ interface Turma {
   nome: string;
 }
 
-const TurmasComponent = () => {
+const TurmasComponent: React.FC = () => {
   const [turmasData, setTurmasData] = useState<Turma[]>([]);
 
   useEffect(() => {
