@@ -174,6 +174,31 @@ app.put('/api/data/users/:id', (req, res) => {
   console.log(`Called PUT Users with ID: ${userId}, got response \n ${JSON.stringify(req.body, null, 2)}`);
 });
 
+app.delete('/api/data/users/:id', (req, res) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const userId = req.params.id;
+
+  const deleteQuery = 'DELETE FROM users WHERE id=?';
+  const queryParams = [userId];
+
+  db.run(deleteQuery, queryParams, function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (this.changes > 0) {
+      res.json({ message: 'User deleted successfully.' });
+    } else {
+      res.status(404).json({ error: 'User not found for the provided ID.' });
+    }
+  });
+});
+
 
 app.get('/api/data/userfullname/:id', (req, res) => {
   const classId = req.params.id;
