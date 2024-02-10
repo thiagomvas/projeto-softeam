@@ -4,25 +4,9 @@ body {
   padding: 10px 10px 30px 30px;
 }
 
-.action-button {
-  background-color: #443C68;
-  color: #ffffff;
-  padding: 1% 1.5%; 
-  margin: 1% 1%; 
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1vw; 
-  transition: 0.3s background-color ease;
-}
-
 @media screen and (max-width: 768px) {
   .action-button {
       padding: 3% 4%; 
       font-size: 2vw; 
   }
-}
-
-.action-button:hover {
-  background-color: #5E548C;
 }

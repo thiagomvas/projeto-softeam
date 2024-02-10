@@ -11,6 +11,9 @@ import {
 } from "../utils";
 import ClassDTO from "../DTOs/ClassDTO";
 import DisciplineDTO from "../DTOs/DisciplineDTO";
+import ClassDisplayComponent from "./ClassDisplayComponent";
+import SettingsComponent from "./UserSettingsComponent";
+import ActionButton from "./ActionButton";
 
 const UserPage: React.FC = () => {
   const location = useLocation();
@@ -19,7 +22,7 @@ const UserPage: React.FC = () => {
   const [enrollments, setEnrollments] = useState<ClassDTO[]>([]);
   const [disciplines, setDisciplines] = useState<DisciplineDTO[]>([]);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const [expandedTab, setExpandedTab] = useState<number | null>(0);
+  const [expandedTab, setExpandedTab] = useState<number>(0);
 
   const toggleCollapse = (index: number) => {
     setExpandedIndex((prevIndex) => (prevIndex === index ? null : index));
@@ -75,49 +78,24 @@ const UserPage: React.FC = () => {
           <h1>Olá, {userDTO.fullname}!</h1>
 
           <div className="tab-buttons">
-            <button className="action-button" onClick={() => setExpandedTab(0)}>
+            <ActionButton onClick={() => setExpandedTab(0)}>
               Turmas
-            </button>
-            <button className="action-button" onClick={() => setExpandedTab(1)}>
+            </ActionButton>
+            <ActionButton onClick={() => setExpandedTab(1)}>
               Configurações
-            </button>
+            </ActionButton>
           </div>
 
-          <div className={`${expandedTab === 0 ? "" : "hidden"}`}>
-            <h2>Suas Turmas:</h2>
-            {enrollments.map((enrollment, index) => (
-              <div
-                className={`class-display ${
-                  expandedIndex === index ? "expanded" : "collapsed"
-                }`}
-                key={index}
-                onClick={() => toggleCollapse(index)}
-              >
-                <p>{disciplines[index].name}</p>
-                {expandedIndex === index ? (
-                  <>
-                    <p>Sala: {enrollment.roomNumber}</p>
-                    <p>Horarios: {enrollment.classTimes}</p>
-                    <p>Turma: {enrollment.id}</p>
-                    <button
-                      style={{ backgroundColor: "#393053" }}
-                      className="action-button"
-                      onClick={() => navigate("/register")}
-                    >
-                      Mais detalhes
-                    </button>
-                  </>
-                ) : (
-                  <p>
-                    {enrollment.roomNumber} | {enrollment.classTimes}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-
+          <ClassDisplayComponent
+            expandedTab={expandedTab}
+            enrollments={enrollments}
+            expandedIndex={expandedIndex}
+            toggleCollapse={toggleCollapse}
+            disciplines={disciplines}
+            navigate={navigate}
+          />
           <div className={`${expandedTab === 1 ? "" : "hidden"}`}>
-            <h2>Configurações</h2>
+            <SettingsComponent user={userDTO} onUpdateUser={() => {console.log("Hello world!!!!!!!1")}} />
           </div>
         </>
       ) : (
