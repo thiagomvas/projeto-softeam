@@ -14,6 +14,20 @@
     transition: background-color 0.3s ease;
 }
 
+@media screen and (min-width: 1200px) {
+    .class-display {
+        font-size: 1vw;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .class-display {
+        width: 80%;
+        font-size: 3vw;
+        max-width: none; 
+    }
+}
+
 .class-display.expanded {
     flex-direction: column;
     align-items: flex-start; 

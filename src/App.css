@@ -6,14 +6,21 @@ body {
 
 .action-button {
   background-color: #443C68;
-  color: #ffffff; 
-  padding: 10px 15px; 
-  margin: 10px 5px;
+  color: #ffffff;
+  padding: 1% 1.5%; 
+  margin: 1% 1%; 
   border: none;
-  border-radius: 5px; 
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 14px; 
+  font-size: 1vw; 
   transition: 0.3s background-color ease;
+}
+
+@media screen and (max-width: 768px) {
+  .action-button {
+      padding: 3% 4%; 
+      font-size: 2vw; 
+  }
 }
 
 .action-button:hover {
