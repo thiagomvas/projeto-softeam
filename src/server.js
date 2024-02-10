@@ -71,7 +71,7 @@ app.get('/api/data/classes', (req, res) => {
 });
 
 
-app.get('/api/data/userenrollments/:id', (req, res) => {
+app.get('/api/data/userenrollmentsasclass/:id', (req, res) => {
   const studentId = req.params.id;
   const query = 'SELECT classes.* FROM classes JOIN classEnrollments ON classes.id = classEnrollments.classId WHERE classEnrollments.studentId = ?';
 
@@ -83,7 +83,7 @@ app.get('/api/data/userenrollments/:id', (req, res) => {
     if (!row) {
       return res.status(404).json({ error: 'Class not found' });
     }
-    console.log(`Called enrollments for ID: ${studentId}, got response \n ${row}`);
+    console.log(`Called enrollments for ID: ${studentId}, got response \n ${JSON.stringify(row, null, 2)}`);
     res.json(row);
   });
 });
@@ -125,14 +125,13 @@ app.get('/api/data/classes/:id', (req, res) => {
 });
 
 app.get('/api/data/users/', (req, res) => {
-  const token = req.headers.authorization; // Assuming the token is in the Authorization header
+  const token = req.headers.authorization; 
 
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
   }
 
-  const query = 'SELECT * FROM users WHERE password = ?'; // Replace 'token' with the actual column name for the token
-
+  const query = 'SELECT * FROM users WHERE password = ?'; 
   db.get(query, [token], (err, row) => {
     if (err) {
       return res.status(500).json({ error: err.message });
@@ -145,6 +144,37 @@ app.get('/api/data/users/', (req, res) => {
     }
   });
 });
+
+app.put('/api/data/users/:id', (req, res) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const userId = req.params.id;
+  var { fullname, password, email, role, phonenumber, address } = req.body;
+
+  const hashedPassword = hashString(password);
+
+  const updateQuery = 'UPDATE users SET fullname=?, password=?, email=?, role=?, phonenumber=?, address=? WHERE id=?';
+  const queryParams = [fullname, hashedPassword, email, role, phonenumber, address, userId];
+
+  db.run(updateQuery, queryParams, function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (this.changes > 0) {
+      res.json({ message: 'User updated successfully.' });
+    } else {
+      res.status(404).json({ error: 'User not found for the provided ID.' });
+    }
+  });
+  console.log(`Called PUT Users with ID: ${userId}, got response \n ${JSON.stringify(req.body, null, 2)}`);
+});
+
+
 app.get('/api/data/userfullname/:id', (req, res) => {
   const classId = req.params.id;
   const query = 'SELECT fullname FROM users WHERE id = ?';

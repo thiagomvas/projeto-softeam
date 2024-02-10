@@ -1,4 +1,7 @@
-// utils.ts
+import * as crypto from 'crypto';
+const {
+  createHash,
+} = await import('node:crypto');
 
 import ClassDTO from "./DTOs/ClassDTO";
 import DisciplineDTO from "./DTOs/DisciplineDTO";

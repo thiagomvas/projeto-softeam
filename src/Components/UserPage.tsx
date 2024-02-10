@@ -41,7 +41,7 @@ const UserPage: React.FC = () => {
         setUserDTO(mappedUserDTO);
 
         const enrollmentsResponse = await axios.get(
-          `http://localhost:3001/api/data/userenrollments/${mappedUserDTO.id}`
+          `http://localhost:3001/api/data/userenrollmentsasclass/${mappedUserDTO.id}`
         );
         const enrollmentsData = enrollmentsResponse.data;
 
@@ -65,11 +65,26 @@ const UserPage: React.FC = () => {
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
-      console.log(expandedTab);
     };
 
     fetchData();
   }, [location.state.userId]);
+
+  const handleUserUpdate = async (updatedUser: UserDTO) => {
+    try {
+      const response = await axios.put<void>(
+        `http://localhost:3001/api/data/users/${userDTO?.id}`,
+        updatedUser,
+        { headers: { Authorization: `${location.state.token}` } }
+      )
+
+    } catch (error: any) {
+      console.error("Error updating user:", error.response.data);
+      // Handle error, show a message, or perform other actions
+    }
+
+    navigate("/login");
+  };
 
   return (
     <div>
@@ -95,7 +110,7 @@ const UserPage: React.FC = () => {
             navigate={navigate}
           />
           <div className={`${expandedTab === 1 ? "" : "hidden"}`}>
-            <SettingsComponent user={userDTO} onUpdateUser={() => {console.log("Hello world!!!!!!!1")}} />
+            <SettingsComponent user={userDTO} onUpdateUser={handleUserUpdate} />
           </div>
         </>
       ) : (

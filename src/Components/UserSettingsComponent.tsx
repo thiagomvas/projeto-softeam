@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import CustomInput from './InputField';
+import './../Styles/InputField.css';
 import LineDivider from './LineDividerComponent';
 import ActionButton from './ActionButton';
 
@@ -19,20 +19,27 @@ interface SettingsProps {
 }
 
 const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
-  const [editedUser, setEditedUser] = useState<UserDTO>({ ...user });
+  const [fullname, setFullname] = useState<string>(user.fullname);
+  const [password, setPassword] = useState<string>('');
+  const [email, setEmail] = useState<string>(user.email);
+  const [role, setRole] = useState<string>(user.role);
+  const [phonenumber, setPhonenumber] = useState<string>(user.phonenumber);
+  const [address, setAddress] = useState<string>(user.address);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditedUser((prevUser) => ({
-      ...prevUser,
-      [name]: value,
-    }));
-  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    // Call the onUpdateUser function with the updated user information
-    onUpdateUser(editedUser);
+    var newUser = {
+      id: user.id,
+      fullname: fullname,
+      password: password,
+      email: email,
+      role: role,
+      phonenumber: phonenumber,
+      address: address,
+    };
+
+    onUpdateUser(newUser);
   };
 
   return (
@@ -41,28 +48,28 @@ const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
       <form onSubmit={handleSubmit}>
         <label>
           Full Name:
-          <CustomInput type="text" value={editedUser.fullname} onChange={handleChange}/>
+          <input className='input-field' type="text" value={fullname} onChange={(e) => setFullname(e.target.value)}/>
         </label>
         <br />
         <label>
           Email:
-          <CustomInput type="email" value={editedUser.email} onChange={handleChange} />
+          <input className='input-field'  type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         <br />
         <label>
           Phone Number:
-          <CustomInput type="tel" value={editedUser.phonenumber} onChange={handleChange} />
+          <input className='input-field'  type="tel" value={phonenumber} onChange={(e) => setPhonenumber(e.target.value)} />
         </label>
         <br />
         <label>
           Address:
-          <CustomInput type="text" value={editedUser.address} onChange={handleChange} />
+          <input className='input-field'  type="text" value={address} onChange={(e) => setAddress(e.target.value)} />
         </label>
         <br />
         <LineDivider height={1} />
         <label>
           Password:
-          <CustomInput type="password" value={editedUser.password} onChange={handleChange} />
+          <input className='input-field'  type="password" onChange={(e) => setPassword(e.target.value)} />
         </label>
         <br />
         <ActionButton onClick={handleSubmit}>Submit</ActionButton>
