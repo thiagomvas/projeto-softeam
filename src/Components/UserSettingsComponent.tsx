@@ -2,6 +2,8 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import './../Styles/InputField.css';
 import LineDivider from './LineDividerComponent';
 import ActionButton from './ActionButton';
+import axios from 'axios';
+import { useLocation, useNavigate } from "react-router-dom";
 
 type UserDTO = {
   id: string;
@@ -19,20 +21,32 @@ interface SettingsProps {
 }
 
 const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
+  const location = useLocation();
   const [fullname, setFullname] = useState<string>(user.fullname);
-  const [password, setPassword] = useState<string>('');
+  const [password, setPassword] = useState<string>(user.password);
   const [email, setEmail] = useState<string>(user.email);
   const [role, setRole] = useState<string>(user.role);
   const [phonenumber, setPhonenumber] = useState<string>(user.phonenumber);
   const [address, setAddress] = useState<string>(user.address);
 
+  const confirmDelete = async () => {
+    if (window.confirm('Are you sure you want to delete your account?')) {
+      const response = await axios.delete(
+        `http://localhost:3001/api/data/users/${user.id}`,
+        { headers: { Authorization: `${location.state.token}` } }
+      );
+
+      console.log(response.data); // Log the success message or handle accordingly
+
+    }
+  }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     var newUser = {
       id: user.id,
       fullname: fullname,
-      password: password,
+      password: password === '' ? user.password : password,
       email: email,
       role: role,
       phonenumber: phonenumber,
@@ -73,6 +87,7 @@ const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
         </label>
         <br />
         <ActionButton onClick={handleSubmit}>Submit</ActionButton>
+        <ActionButton onClick={confirmDelete}>Delete Account</ActionButton>
       </form>
     </div>
   );
