@@ -16,8 +16,7 @@ const TurmasComponent: React.FC = () => {
     const fetchData = async () => {
       try {
         const disciplinesResponse = await axios.get(
-          `http://localhost:3001/api/data/disciplines`,
-          { headers: { Authorization: `${location.state.token}` } }
+          `http://localhost:3001/api/data/disciplines`
         );
         const disciplinesData = disciplinesResponse.data;
         const mappedDisciplines: DisciplineDTO[] = disciplinesData.map((disciplineData: any) =>
@@ -66,9 +65,8 @@ const TurmasComponent: React.FC = () => {
     };
   
     fetchData();
-  }, [location.state.token]);
+  }, [location]); 
   
-
   return (
     <div>
       {disciplines.map((discipline) => (

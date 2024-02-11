@@ -17,6 +17,7 @@ app.use(express.json());
 // Connect to the SQLite database
 const db = new sqlite3.Database('src/database.db');
 
+
 // Endpoint for user login
 app.post('/api/auth/login', (req, res) => {
   var { username, password } = req.body;
@@ -109,6 +110,45 @@ app.get('/api/tables', (req, res) => {
     res.json(tables);
   });
 });
+
+// Endpoint to get all disciplines
+app.get('/api/data/disciplines', (req, res) => {
+  const query = 'SELECT * FROM disciplines';
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+// Endpoint to get classes by discipline ID
+app.get('/api/data/classes/:disciplineId', (req, res) => {
+  const disciplineId = req.params.disciplineId;
+  const query = 'SELECT * FROM classes WHERE disciplineId = ?';
+
+  db.all(query, [disciplineId], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+// Endpoint to get participants by class ID
+app.get('/api/data/users/:classId', (req, res) => {
+  const classId = req.params.classId;
+  const query = 'SELECT * FROM classEnrollments INNER JOIN users ON classEnrollments.studentId = users.id WHERE classEnrollments.classId = ?';
+
+  db.all(query, [classId], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}\nlocalhost:${port}/api/data`);
