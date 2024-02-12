@@ -29,7 +29,7 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     if (row) {
-      res.json({ success: true, message: 'Login successful!' });
+      res.json({ success: true, message: 'Login successful!' , token: row.password});
     } else {
       res.json({ success: false, message: 'Login failed. Please check your credentials.' });
     }
@@ -70,6 +70,43 @@ app.get('/api/data/classes', (req, res) => {
   });
 });
 
+
+app.get('/api/data/userenrollmentsasclass/:id', (req, res) => {
+  const studentId = req.params.id;
+  const query = 'SELECT classes.* FROM classes JOIN classEnrollments ON classes.id = classEnrollments.classId WHERE classEnrollments.studentId = ?';
+
+  db.all(query, [studentId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    console.log(`Called enrollments for ID: ${studentId}, got response \n ${JSON.stringify(row, null, 2)}`);
+    res.json(row);
+  });
+});
+
+
+app.get('/api/data/discipline/:id', (req, res) => {
+  const classId = req.params.id;
+  const query = 'SELECT * FROM disciplines WHERE id = ?';
+
+  db.get(query, [classId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    res.json(row);
+  });
+});
+
+
 app.get('/api/data/classes/:id', (req, res) => {
   const classId = req.params.id;
   const query = 'SELECT * FROM classes WHERE id = ?';
@@ -87,16 +124,115 @@ app.get('/api/data/classes/:id', (req, res) => {
   });
 });
 
-app.get('/api/data/users', (req, res) => {
-  const query = 'SELECT * FROM users';
-  
-  db.all(query, [], (err, rows) => {
+app.get('/api/data/users/', (req, res) => {
+  const token = req.headers.authorization; 
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const query = 'SELECT * FROM users WHERE password = ?'; 
+  db.get(query, [token], (err, row) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+
+    if (row) {
+      res.json(row);
+    } else {
+      res.status(404).json({ error: 'User not found for the provided token.' });
+    }
   });
 });
+
+app.put('/api/data/users/:id', async (req, res) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const userId = req.params.id;
+  const { fullname, password, email, role, phonenumber, address } = req.body;
+
+  // Retrieve the current hashed password from the database
+  const getCurrentPasswordQuery = 'SELECT password FROM users WHERE id=?';
+  const currentPasswordRow = await new Promise((resolve, reject) => {
+    db.get(getCurrentPasswordQuery, [userId], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+  // Check if the new password is not an empty string
+  const newPassword = password !== currentPasswordRow.password ? hashString(password) : currentPasswordRow.password;
+  console.log(`password: ${password}, new password: ${newPassword}, current password row: ${currentPasswordRow.password}`);
+  // Update the user with the new hashed password
+  const updateQuery = 'UPDATE users SET fullname=?, password=?, email=?, role=?, phonenumber=?, address=? WHERE id=?';
+  const queryParams = [fullname, newPassword, email, role, phonenumber, address, userId];
+
+  db.run(updateQuery, queryParams, function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (this.changes > 0) {
+      res.json({ message: 'User updated successfully.' });
+    } else {
+      res.status(404).json({ error: 'User not found for the provided ID.' });
+    }
+  });
+
+  console.log(`Called PUT Users with ID: ${userId}, got response \n ${JSON.stringify(req.body, null, 2)}`);
+});
+
+
+
+app.delete('/api/data/users/:id', (req, res) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const userId = req.params.id;
+
+  const deleteQuery = 'DELETE FROM users WHERE id=?';
+  const queryParams = [userId];
+
+  db.run(deleteQuery, queryParams, function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (this.changes > 0) {
+      res.json({ message: 'User deleted successfully.' });
+    } else {
+      res.status(404).json({ error: 'User not found for the provided ID.' });
+    }
+  });
+});
+
+
+app.get('/api/data/userfullname/:id', (req, res) => {
+  const classId = req.params.id;
+  const query = 'SELECT fullname FROM users WHERE id = ?';
+
+  db.get(query, [classId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    console.log(row);
+    res.json(row);
+  });
+});
+
 
 app.get('/api/tables', (req, res) => {
   const query = "SELECT name FROM sqlite_master WHERE type='table'";
