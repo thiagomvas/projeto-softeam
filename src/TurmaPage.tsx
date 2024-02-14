@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { mapResponseToClassDTO, mapResponseToDisciplineDTO, mapResponseToUserDTO } from "./utils";
 import ClassDTO from "./DTOs/ClassDTO";
@@ -15,10 +14,11 @@ const TurmasComponent: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const disciplinesResponse = await axios.get(
-          `http://localhost:3001/api/data/disciplines`
-        );
-        const disciplinesData = disciplinesResponse.data;
+        console.log("Buscando disciplinas...");
+        const disciplinesResponse = await fetch(`http://localhost:3001/api/data/disciplines`);
+        const disciplinesData = await disciplinesResponse.json();
+        console.log("Disciplinas recebidas:", disciplinesData);
+
         const mappedDisciplines: DisciplineDTO[] = disciplinesData.map((disciplineData: any) =>
           mapResponseToDisciplineDTO(disciplineData)
         );
@@ -26,19 +26,19 @@ const TurmasComponent: React.FC = () => {
         setDisciplines(mappedDisciplines);
   
         const fetchClassesAndParticipants = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
-          const classesResponse = await axios.get(
-            `http://localhost:3001/api/data/classes/${discipline.id}`
-          );
-          const classesData = classesResponse.data;
+          const classesResponse = await fetch(`http://localhost:3001/api/data/classes/:disciplineId/${discipline.id}`);
+          const classesData = await classesResponse.json();
+          console.log(`Classes para disciplina ${discipline.id}:`, classesData);
+
           const mappedClasses: ClassDTO[] = classesData.map((classData: any) =>
             mapResponseToClassDTO(classData)
           );
   
           const fetchParticipantsByClass = mappedClasses.map(async (classItem: ClassDTO) => {
-            const participantsResponse = await axios.get(
-              `http://localhost:3001/api/data/participants/${classItem.id}`
-            );
-            const participantsData = participantsResponse.data;
+            const participantsResponse = await fetch(`http://localhost:3001/api/data/users/:classId/${classItem.id}`);
+            const participantsData = await participantsResponse.json();
+            console.log(`Participantes para classe ${classItem.id}:`, participantsData);
+
             const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
               mapResponseToUserDTO(participantData)
             );
@@ -70,18 +70,18 @@ const TurmasComponent: React.FC = () => {
   return (
     <div>
       {disciplines.map((discipline) => (
-        <div key={discipline.id}>
-          <h1>Turmas de {discipline.name}</h1>
+        <div key={discipline.id }>
+          <h1>Turma de {discipline.name}</h1>
           <div>
-          {classesByDiscipline[discipline.id]?.map((classItem) => (
-                <div key={classItem.id}>
-                  <p>Id:{classItem.id}</p>
-                  <p>Professor:{classItem.professorId}</p>
-                  <p>Horário:{classItem.classTimes}</p>
-                  <p>Sala:{classItem.roomNumber}</p>
-                  <p>Departamento:{discipline.department}</p>
-                </div>
-              ))}
+            {classesByDiscipline[discipline.id]?.map((classItem) => (
+              <div key={classItem.id}>
+                <p>Id:{classItem.id}</p>
+                <p>Professor:{classItem.professorId}</p>
+                <p>Horário:{classItem.classTimes}</p>
+                <p>Sala:{classItem.roomNumber}</p>
+                <p>Departamento:{discipline.department}</p>
+              </div>
+            ))}
           </div>
           <h1>Participantes</h1>
           <table>

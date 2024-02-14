@@ -1,6 +1,6 @@
 import express from 'express';
 import sqlite3 from 'sqlite3';
-import cors from 'cors'
+import cors from 'cors';
 import * as crypto from 'crypto';
 
 const app = express();
@@ -12,7 +12,12 @@ function hashString(input) {
   return hash.digest('hex');
 }
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 // Connect to the SQLite database
 const db = new sqlite3.Database('src/database.db');
