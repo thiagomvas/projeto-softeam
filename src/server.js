@@ -1,7 +1,8 @@
 import express from 'express';
 import sqlite3 from 'sqlite3';
-import cors from 'cors';
+import cors from 'cors'
 import * as crypto from 'crypto';
+
 
 const app = express();
 const port = 3001;
@@ -12,16 +13,10 @@ function hashString(input) {
   return hash.digest('hex');
 }
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+app.use(cors());
 app.use(express.json());
 // Connect to the SQLite database
 const db = new sqlite3.Database('src/database.db');
-
 
 // Endpoint for user login
 app.post('/api/auth/login', (req, res) => {
@@ -35,7 +30,7 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     if (row) {
-      res.json({ success: true, message: 'Login successful!' });
+      res.json({ success: true, message: 'Login successful!' , token: row.password});
     } else {
       res.json({ success: false, message: 'Login failed. Please check your credentials.' });
     }
@@ -63,6 +58,17 @@ app.post('/api/auth/register', (req, res) => {
   });
 });
 
+app.get('/api/data/discipline', (req, res) => {
+  const query = 'SELECT * FROM disciplines'
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  })
+})
+
 
 // Define a route to fetch all data
 app.get('/api/data/classes', (req, res) => {
@@ -75,6 +81,43 @@ app.get('/api/data/classes', (req, res) => {
     res.json(rows);
   });
 });
+
+
+app.get('/api/data/userenrollmentsasclass/:id', (req, res) => {
+  const studentId = req.params.id;
+  const query = 'SELECT classes.* FROM classes JOIN classEnrollments ON classes.id = classEnrollments.classId WHERE classEnrollments.studentId = ?';
+
+  db.all(query, [studentId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    console.log(`Called enrollments for ID: ${studentId}, got response \n ${JSON.stringify(row, null, 2)}`);
+    res.json(row);
+  });
+});
+
+
+app.get('/api/data/discipline/:id', (req, res) => {
+  const classId = req.params.id;
+  const query = 'SELECT * FROM disciplines WHERE id = ?';
+
+  db.get(query, [classId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    res.json(row);
+  });
+});
+
 
 app.get('/api/data/classes/:id', (req, res) => {
   const classId = req.params.id;
@@ -93,16 +136,115 @@ app.get('/api/data/classes/:id', (req, res) => {
   });
 });
 
-app.get('/api/data/users', (req, res) => {
-  const query = 'SELECT * FROM users';
-  
-  db.all(query, [], (err, rows) => {
+app.get('/api/data/users/', (req, res) => {
+  const token = req.headers.authorization; 
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const query = 'SELECT * FROM users WHERE password = ?'; 
+  db.get(query, [token], (err, row) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+
+    if (row) {
+      res.json(row);
+    } else {
+      res.status(404).json({ error: 'User not found for the provided token.' });
+    }
   });
 });
+
+app.put('/api/data/users/:id', async (req, res) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const userId = req.params.id;
+  const { fullname, password, email, role, phonenumber, address } = req.body;
+
+  // Retrieve the current hashed password from the database
+  const getCurrentPasswordQuery = 'SELECT password FROM users WHERE id=?';
+  const currentPasswordRow = await new Promise((resolve, reject) => {
+    db.get(getCurrentPasswordQuery, [userId], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+  // Check if the new password is not an empty string
+  const newPassword = password !== currentPasswordRow.password ? hashString(password) : currentPasswordRow.password;
+  console.log(`password: ${password}, new password: ${newPassword}, current password row: ${currentPasswordRow.password}`);
+  // Update the user with the new hashed password
+  const updateQuery = 'UPDATE users SET fullname=?, password=?, email=?, role=?, phonenumber=?, address=? WHERE id=?';
+  const queryParams = [fullname, newPassword, email, role, phonenumber, address, userId];
+
+  db.run(updateQuery, queryParams, function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (this.changes > 0) {
+      res.json({ message: 'User updated successfully.' });
+    } else {
+      res.status(404).json({ error: 'User not found for the provided ID.' });
+    }
+  });
+
+  console.log(`Called PUT Users with ID: ${userId}, got response \n ${JSON.stringify(req.body, null, 2)}`);
+});
+
+
+
+app.delete('/api/data/users/:id', (req, res) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized. Token not provided.' });
+  }
+
+  const userId = req.params.id;
+
+  const deleteQuery = 'DELETE FROM users WHERE id=?';
+  const queryParams = [userId];
+
+  db.run(deleteQuery, queryParams, function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (this.changes > 0) {
+      res.json({ message: 'User deleted successfully.' });
+    } else {
+      res.status(404).json({ error: 'User not found for the provided ID.' });
+    }
+  });
+});
+
+
+app.get('/api/data/userfullname/:id', (req, res) => {
+  const classId = req.params.id;
+  const query = 'SELECT fullname FROM users WHERE id = ?';
+
+  db.get(query, [classId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    console.log(row);
+    res.json(row);
+  });
+});
+
 
 app.get('/api/tables', (req, res) => {
   const query = "SELECT name FROM sqlite_master WHERE type='table'";
@@ -115,45 +257,6 @@ app.get('/api/tables', (req, res) => {
     res.json(tables);
   });
 });
-
-// Endpoint to get all disciplines
-app.get('/api/data/disciplines', (req, res) => {
-  const query = 'SELECT * FROM disciplines';
-
-  db.all(query, [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});
-
-// Endpoint to get classes by discipline ID
-app.get('/api/data/classes/:disciplineId', (req, res) => {
-  const disciplineId = req.params.disciplineId;
-  const query = 'SELECT * FROM classes WHERE disciplineId = ?';
-
-  db.all(query, [disciplineId], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});
-
-// Endpoint to get participants by class ID
-app.get('/api/data/users/:classId', (req, res) => {
-  const classId = req.params.classId;
-  const query = 'SELECT * FROM classEnrollments INNER JOIN users ON classEnrollments.studentId = users.id WHERE classEnrollments.classId = ?';
-
-  db.all(query, [classId], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});
-
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}\nlocalhost:${port}/api/data`);

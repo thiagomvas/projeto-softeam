@@ -4,6 +4,8 @@ import { mapResponseToClassDTO, mapResponseToDisciplineDTO, mapResponseToUserDTO
 import ClassDTO from "./DTOs/ClassDTO";
 import DisciplineDTO from "./DTOs/DisciplineDTO";
 import UserDTO from './DTOs/UserDTO';
+import axios from 'axios';
+
 
 const TurmasComponent: React.FC = () => {
   const location = useLocation();
@@ -15,47 +17,47 @@ const TurmasComponent: React.FC = () => {
     const fetchData = async () => {
       try {
         console.log("Buscando disciplinas...");
-        const disciplinesResponse = await fetch(`http://localhost:3001/api/data/disciplines`);
-        const disciplinesData = await disciplinesResponse.json();
+        const response = await axios.get('http://localhost:3001/api/data/discipline');
+        const disciplinesData = response.data;
         console.log("Disciplinas recebidas:", disciplinesData);
 
         const mappedDisciplines: DisciplineDTO[] = disciplinesData.map((disciplineData: any) =>
           mapResponseToDisciplineDTO(disciplineData)
         );
-  
+
         setDisciplines(mappedDisciplines);
-  
+
         const fetchClassesAndParticipants = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
-          const classesResponse = await fetch(`http://localhost:3001/api/data/classes/:disciplineId/${discipline.id}`);
-          const classesData = await classesResponse.json();
+          const classesResponse = await axios.get(`http://localhost:3001/api/data/classes/${discipline.id}`); // Correção: removido ":disciplineId" da URL
+          const classesData = classesResponse.data;
           console.log(`Classes para disciplina ${discipline.id}:`, classesData);
 
           const mappedClasses: ClassDTO[] = classesData.map((classData: any) =>
             mapResponseToClassDTO(classData)
           );
-  
+
           const fetchParticipantsByClass = mappedClasses.map(async (classItem: ClassDTO) => {
-            const participantsResponse = await fetch(`http://localhost:3001/api/data/users/:classId/${classItem.id}`);
-            const participantsData = await participantsResponse.json();
+            const participantsResponse = await axios.get(`http://localhost:3001/api/data/users/${classItem.id}`); // Correção: removido ":classId" da URL
+            const participantsData = participantsResponse.data;
             console.log(`Participantes para classe ${classItem.id}:`, participantsData);
 
             const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
               mapResponseToUserDTO(participantData)
             );
-  
+
             return { [classItem.id]: mappedParticipants };
           });
-  
+
           const loadedParticipantsByClass = await Promise.all(fetchParticipantsByClass);
           const mergedParticipantsByClass = Object.assign({}, ...loadedParticipantsByClass);
           setParticipantsByClass((prevParticipants) => ({
             ...prevParticipants,
             ...mergedParticipantsByClass
           }));
-  
+
           return { [discipline.id]: mappedClasses };
         });
-  
+
         const loadedClassesByDiscipline = await Promise.all(fetchClassesAndParticipants);
         const mergedClassesByDiscipline = Object.assign({}, ...loadedClassesByDiscipline);
         setClassesByDiscipline(mergedClassesByDiscipline);
@@ -63,7 +65,7 @@ const TurmasComponent: React.FC = () => {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
   }, [location]); 
   
