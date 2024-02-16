@@ -9,15 +9,16 @@ import axios from 'axios';
 
 const TurmasComponent: React.FC = () => {
   const location = useLocation();
+  const [disciplines, setDisciplines] = useState<DisciplineDTO[]>([]);
   const [classesByDiscipline, setClassesByDiscipline] = useState<{ [key: string]: ClassDTO[] }>({});
   const [participantsByClass, setParticipantsByClass] = useState<{ [key: string]: UserDTO[] }>({});
-  const [disciplines, setDisciplines] = useState<DisciplineDTO[]>([]);
+  
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log("Buscando disciplinas...");
-        const response = await axios.get('http://localhost:3001/api/data/discipline');
+        const response = await axios.get(`http://localhost:3001/api/data/discipline`);
         const disciplinesData = response.data;
         console.log("Disciplinas recebidas:", disciplinesData);
 
@@ -28,34 +29,42 @@ const TurmasComponent: React.FC = () => {
         setDisciplines(mappedDisciplines);
 
         const fetchClassesAndParticipants = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
-          const classesResponse = await axios.get(`http://localhost:3001/api/data/classes/${discipline.id}`); // Correção: removido ":disciplineId" da URL
+          console.log('buscando classes');
+          const classesResponse = await axios.get(`http://localhost:3001/api/data/classDiscilpine/${discipline.id}`);
           const classesData = classesResponse.data;
           console.log(`Classes para disciplina ${discipline.id}:`, classesData);
 
-          const mappedClasses: ClassDTO[] = classesData.map((classData: any) =>
-            mapResponseToClassDTO(classData)
-          );
-
-          const fetchParticipantsByClass = mappedClasses.map(async (classItem: ClassDTO) => {
-            const participantsResponse = await axios.get(`http://localhost:3001/api/data/users/${classItem.id}`); // Correção: removido ":classId" da URL
-            const participantsData = participantsResponse.data;
-            console.log(`Participantes para classe ${classItem.id}:`, participantsData);
-
-            const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
-              mapResponseToUserDTO(participantData)
+          // Verifique se classesData é um array antes de mapeá-lo
+          if (Array.isArray(classesData)) {
+            const mappedClasses: ClassDTO[] = classesData.map((classData: any) =>
+              mapResponseToClassDTO(classData)
             );
 
-            return { [classItem.id]: mappedParticipants };
-          });
+            const fetchParticipantsbyDiscipline = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
+              console.log("buscando participantes");
+              const participantsResponse = await axios.get(`http://localhost:3001/api/data/participant/${discipline.id}`);
+              const participantsData = participantsResponse.data;
+              console.log(`Participantes para classe ${discipline.id}:`, participantsData);
 
-          const loadedParticipantsByClass = await Promise.all(fetchParticipantsByClass);
-          const mergedParticipantsByClass = Object.assign({}, ...loadedParticipantsByClass);
-          setParticipantsByClass((prevParticipants) => ({
-            ...prevParticipants,
-            ...mergedParticipantsByClass
-          }));
+              const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
+                mapResponseToUserDTO(participantData)
+              );
 
-          return { [discipline.id]: mappedClasses };
+              return { [discipline.id]: mappedParticipants };
+            });
+
+            const loadedParticipantsByClass = await Promise.all(fetchParticipantsbyDiscipline);
+            const mergedParticipantsByClass = Object.assign({}, ...loadedParticipantsByClass);
+            setParticipantsByClass((prevParticipants) => ({
+              ...prevParticipants,
+              ...mergedParticipantsByClass
+            }));
+
+            return { [discipline.id]: mappedClasses };
+          } else {
+            console.error("Erro: classesData não é um array.");
+            return {};
+          }
         });
 
         const loadedClassesByDiscipline = await Promise.all(fetchClassesAndParticipants);
@@ -74,10 +83,11 @@ const TurmasComponent: React.FC = () => {
       {disciplines.map((discipline) => (
         <div key={discipline.id }>
           <h1>Turma de {discipline.name}</h1>
+          <p>Departamento: {discipline.department}</p>
           <div>
             {classesByDiscipline[discipline.id]?.map((classItem) => (
               <div key={classItem.id}>
-                <p>Id:{classItem.id}</p>
+                <p>Id: {classItem.id}</p>
                 <p>Professor:{classItem.professorId}</p>
                 <p>Horário:{classItem.classTimes}</p>
                 <p>Sala:{classItem.roomNumber}</p>
