@@ -258,7 +258,7 @@ app.get('/api/data/participant/:disciplineId', (req, res) => {
       return res.status(404).json({ error: 'users not found' });
     }
 
-    res.json(rows); // Retorna um array de resultados
+    res.json(rows);
   });
 });
 
@@ -276,7 +276,7 @@ app.get('/api/data/classDiscilpine/:disciplineId', (req, res) => {
       return res.status(404).json({ error: 'classes not found' });
     }
 
-    const uniqueClasses = new Set(); // Conjunto para armazenar IDs únicos de classes
+    const uniqueClasses = new Set(); 
     const uniqueRows = rows.filter(row => {
       if (!uniqueClasses.has(row.id)) {
         uniqueClasses.add(row.id);
@@ -285,12 +285,27 @@ app.get('/api/data/classDiscilpine/:disciplineId', (req, res) => {
       return false;
     });
 
-    res.json(uniqueRows); // Retorna apenas resultados únicos
+    res.json(uniqueRows); 
   });
 });
 
 
+app.get('/api/data/professor/:disciplineId', (req, res) => {
+  const disciplineId = req.params.disciplineId;
+  const query = 'SELECT u.fullname AS professor_name FROM users u JOIN classes c ON u.id = c.professorId WHERE c.disciplineId = ?;';
+  
+  db.all(query, [disciplineId], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
 
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'users not found' });
+    }
+
+    res.json(rows);
+  });
+})
 
 app.get('/api/tables', (req, res) => {
   const query = "SELECT name FROM sqlite_master WHERE type='table'";
