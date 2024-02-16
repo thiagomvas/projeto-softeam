@@ -40,24 +40,19 @@ const TurmasComponent: React.FC = () => {
               mapResponseToClassDTO(classData)
             );
 
-            const fetchParticipantsbyDiscipline = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
-              console.log("buscando participantes");
-              const participantsResponse = await axios.get(`http://localhost:3001/api/data/participant/${discipline.id}`);
-              const participantsData = participantsResponse.data;
-              console.log(`Participantes para classe ${discipline.id}:`, participantsData);
+            // Buscar participantes apenas para esta disciplina
+            console.log("buscando participantes");
+            const participantsResponse = await axios.get(`http://localhost:3001/api/data/participant/${discipline.id}`);
+            const participantsData = participantsResponse.data;
+            console.log(`Participantes para disciplina ${discipline.id}:`, participantsData);
 
-              const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
-                mapResponseToUserDTO(participantData)
-              );
+            const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
+              mapResponseToUserDTO(participantData)
+            );
 
-              return { [discipline.id]: mappedParticipants };
-            });
-
-            const loadedParticipantsByClass = await Promise.all(fetchParticipantsbyDiscipline);
-            const mergedParticipantsByClass = Object.assign({}, ...loadedParticipantsByClass);
             setParticipantsByClass((prevParticipants) => ({
               ...prevParticipants,
-              ...mergedParticipantsByClass
+              [discipline.id]: mappedParticipants
             }));
 
             return { [discipline.id]: mappedClasses };
@@ -83,11 +78,9 @@ const TurmasComponent: React.FC = () => {
       {disciplines.map((discipline) => (
         <div key={discipline.id }>
           <h1>Turma de {discipline.name}</h1>
-          <p>Departamento: {discipline.department}</p>
           <div>
             {classesByDiscipline[discipline.id]?.map((classItem) => (
               <div key={classItem.id}>
-                <p>Id: {classItem.id}</p>
                 <p>Professor:{classItem.professorId}</p>
                 <p>Horário:{classItem.classTimes}</p>
                 <p>Sala:{classItem.roomNumber}</p>

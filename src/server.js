@@ -276,9 +276,19 @@ app.get('/api/data/classDiscilpine/:disciplineId', (req, res) => {
       return res.status(404).json({ error: 'classes not found' });
     }
 
-    res.json(rows); // Retorna um array de resultados
+    const uniqueClasses = new Set(); // Conjunto para armazenar IDs únicos de classes
+    const uniqueRows = rows.filter(row => {
+      if (!uniqueClasses.has(row.id)) {
+        uniqueClasses.add(row.id);
+        return true;
+      }
+      return false;
+    });
+
+    res.json(uniqueRows); // Retorna apenas resultados únicos
   });
 });
+
 
 
 
