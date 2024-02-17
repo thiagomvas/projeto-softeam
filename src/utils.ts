@@ -33,7 +33,6 @@ export function mapResponseToDisciplineDTO(responseData: any): DisciplineDTO {
   const disciplineDTO: DisciplineDTO = {
     id: responseData.id,
     name: responseData.name,
-    description: responseData.description,
     department: responseData.department,
   };
   return disciplineDTO;

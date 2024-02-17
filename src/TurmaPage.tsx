@@ -5,6 +5,7 @@ import ClassDTO from "./DTOs/ClassDTO";
 import DisciplineDTO from "./DTOs/DisciplineDTO";
 import UserDTO from './DTOs/UserDTO';
 import axios from 'axios';
+import './turmaPage.css';
 
 
 const TurmasComponent: React.FC = () => {
@@ -105,18 +106,18 @@ const TurmasComponent: React.FC = () => {
     <div>
       {disciplines.map((discipline) => (
         <div key={discipline.id }>
-          <h1>Turma de {discipline.name}</h1>
+          <h1 id='h1-primeiro'>Turma de {discipline.name}</h1>
           <div>
             {classesByDiscipline[discipline.id]?.map((classItem) => (
               <div key={classItem.id}>
                 <p>Professor: {professorName}</p>
-                <p>Horário:{ classItem.classTimes}</p>
+                <p>Horário: { classItem.classTimes}</p>
                 <p>Sala: {classItem.roomNumber}</p>
                 <p>Departamento: {discipline.department}</p>
               </div>
             ))}
           </div>
-          <h1>Participantes</h1>
+          <h1 id='h1-segundo'>Participantes</h1>
           <table>
             <thead>
               <tr>
