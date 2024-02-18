@@ -1,3 +1,4 @@
+// utils.ts
 import * as crypto from 'crypto';
 const {
   createHash,
@@ -26,7 +27,8 @@ export function mapResponseToClassDTO(responseData: any): ClassDTO {
     disciplineId: responseData.disciplineId,
     professorId: responseData.professorId,
     classTimes: responseData.classtimes,
-    roomNumber: responseData.roomNumber
+    roomNumber: responseData.roomNumber,
+    name: ""
   };
   return classDTO;
 }

@@ -1,8 +1,8 @@
-type ClassDTO = {
-    id: number;
+type DisciplineDTO = {
+    id: string;
     name: string;
-    description: string;
     department: string;
+    description: string;
 }
 
-export default ClassDTO;
+export default DisciplineDTO;

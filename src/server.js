@@ -3,6 +3,7 @@ import sqlite3 from 'sqlite3';
 import cors from 'cors'
 import * as crypto from 'crypto';
 
+
 const app = express();
 const port = 3001;
 
@@ -57,6 +58,17 @@ app.post('/api/auth/register', (req, res) => {
   });
 });
 
+app.get('/api/data/discipline', (req, res) => {
+  const query = 'SELECT * FROM disciplines'
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  })
+})
+
 
 // Define a route to fetch all data
 app.get('/api/data/classes', (req, res) => {
@@ -90,16 +102,16 @@ app.get('/api/data/userenrollmentsasclass/:id', (req, res) => {
 
 
 app.get('/api/data/discipline/:id', (req, res) => {
-  const classId = req.params.id;
+  const disciplineId = req.params.id;
   const query = 'SELECT * FROM disciplines WHERE id = ?';
 
-  db.get(query, [classId], (err, row) => {
+  db.get(query, [disciplineId], (err, row) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
 
     if (!row) {
-      return res.status(404).json({ error: 'Class not found' });
+      return res.status(404).json({ error: 'discipline not found' });
     }
 
     res.json(row);
@@ -216,6 +228,23 @@ app.delete('/api/data/users/:id', (req, res) => {
 });
 
 
+app.get('/api/data/professor/:disciplineId', (req, res) => {
+  const disciplineId = req.params.disciplineId;
+  const query = 'SELECT u.fullname AS professor_name FROM users u JOIN classes c ON u.id = c.professorId WHERE c.disciplineId = ?;';
+  
+  db.all(query, [disciplineId], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'users not found' });
+    }
+
+    res.json(rows);
+  });
+})
+
 app.get('/api/data/userfullname/:id', (req, res) => {
   const classId = req.params.id;
   const query = 'SELECT fullname FROM users WHERE id = ?';
@@ -233,6 +262,45 @@ app.get('/api/data/userfullname/:id', (req, res) => {
   });
 });
 
+app.get('/api/data/participant/:disciplineId', (req, res) => {
+  const disciplineId = req.params.disciplineId;
+  const query = 'SELECT * FROM users INNER JOIN classEnrollments ON users.id = classEnrollments.studentId WHERE classEnrollments.disciplineId = ?;';
+
+  db.all(query, [disciplineId], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'users not found' });
+    }
+
+    res.json(rows);
+  });
+});
+
+
+app.get('/api/data/classDiscilpine/:disciplineId', (req, res) => {
+  const disciplineId = req.params.disciplineId;
+  const query = 'SELECT * FROM classes INNER JOIN classEnrollments ON classes.id = classEnrollments.classId WHERE classEnrollments.disciplineId = ?;';
+
+  db.all(query, [disciplineId], (err, rows) => {
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'classes not found' });
+    }
+
+    const uniqueClasses = new Set(); 
+    const uniqueRows = rows.filter(row => {
+      if (!uniqueClasses.has(row.id)) {
+        uniqueClasses.add(row.id);
+        return true;
+      }
+      return false;
+    });
+
+    res.json(uniqueRows);
+  });
+});
 
 app.get('/api/tables', (req, res) => {
   const query = "SELECT name FROM sqlite_master WHERE type='table'";

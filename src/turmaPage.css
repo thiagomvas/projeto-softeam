@@ -1,0 +1,66 @@
+/* Estilo para o cabeçalho da turma */
+/* Estilo para o cabeçalho da turma */
+/*User
+use as cores:
+#635985
+#443C68
+#393053
+#18122B
+*/
+/* Estilo para o cabeçalho da turma */
+h1 {
+    background-color: #443C68; /* Adicionando um background ao h1 */
+    font-size: 39px; /* Aumentando o tamanho do h1 */
+    margin: 0; /* Removendo todas as margens */
+    padding-left: 10px; /* Adicionando um preenchimento ao h1 (20px na vertical, 10px na horizontal) */
+    display: block; /* Garante que o elemento ocupe toda a largura disponível */
+  }
+
+  #h1-primeiro {
+    padding-top: 75px;
+    padding-bottom: 10px;
+  }
+
+  #h1-segundo {
+    padding: 20px;
+  }
+  
+  p {
+    font-size: 20px;
+    margin-left: 30px;
+    padding: 10px;
+  }
+  
+  /* Estilo para a tabela de participantes */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  
+  /* Estilo para o cabeçalho da tabela */
+  th { 
+    background-color: #393053; /* Cor: #443C68 */
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    color: #fff; /* Cor do texto branco */
+    font-size: 17px;
+  }
+  
+  /* Estilo para as células da tabela */
+  td {
+    font-size: 17px;
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  /* Estilo para as linhas pares da tabela */
+  tbody tr:nth-child(even) {
+    background-color: #393053; /* Cor: #393053 */
+  }
+  
+  /* Estilo para as cores gerais do documento */
+
+  

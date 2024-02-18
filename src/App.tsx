@@ -12,7 +12,9 @@ import {
 // import Home component
 import Login from "./Components/LoginPage";
 import Register from "./Components/RegisterPage";
+import Turmas from "./TurmaPage";
 import UserPage from "./Components/UserPage";
+import React from "react";
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/turma" element={<Turmas />} />
           <Route path="/userpage" element={<UserPage />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>

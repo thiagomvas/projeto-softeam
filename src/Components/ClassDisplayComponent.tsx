@@ -1,6 +1,5 @@
 import React from 'react';
 import DisciplineDTO from '../DTOs/DisciplineDTO';
-import ClassEnrollmentDTO from '../DTOs/ClassEnrollmentDTO';
 import ClassDTO from '../DTOs/ClassDTO';
 import ActionButton from './ActionButton';
 
@@ -10,7 +9,7 @@ interface ClassDisplayProps {
   expandedIndex: number | null;
   toggleCollapse: (index: number) => void;
   disciplines: DisciplineDTO[]; 
-  navigate: (path: string) => void;
+  navigate: (path: string, state?: any) => void; // Adicionado state como um parâmetro opcional
 }
 
 const ClassDisplayComponent: React.FC<ClassDisplayProps> = ({
@@ -21,6 +20,11 @@ const ClassDisplayComponent: React.FC<ClassDisplayProps> = ({
   disciplines,
   navigate,
 }) => {
+
+  const handleTurmasClick = (disciplineId: string) => {
+    navigate("/turma", { state: { disciplineId } });
+  };
+
   return (
     <div className={`${expandedTab === 0 ? "" : "hidden"}`}>
       <h2>Suas Turmas:</h2>
@@ -37,7 +41,7 @@ const ClassDisplayComponent: React.FC<ClassDisplayProps> = ({
               <p>Horarios: {enrollment.classTimes}</p>
               <p>Turma: {enrollment.id}</p>
               <ActionButton
-                onClick={() => navigate("/register")}
+                onClick={() => handleTurmasClick(disciplines[index].id)} // Passando a ID da disciplina para handleTurmasClick
               >
                 Mais detalhes
               </ActionButton>
