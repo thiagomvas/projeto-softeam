@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import '../Styles/InputField.css';
+import ActionButton from './ActionButton';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -36,6 +38,8 @@ const LoginPage: React.FC = () => {
         <div>
           <label htmlFor="username">Username:</label>
           <input
+          className='input-field'
+          style={{ width: '200px'}}
             type="text"
             id="username"
             value={username}
@@ -45,14 +49,19 @@ const LoginPage: React.FC = () => {
         <div>
           <label htmlFor="password">Password:</label>
           <input
+          className='input-field'
+          style={{ width: '200px'}}
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <button type="button" onClick={handleLogin}>
+        <button className="action-button" type="button" onClick={handleLogin}>
           Login
+        </button>
+        <button className="action-button" type="button" onClick={() => navigate('/register')}>
+          Registrar
         </button>
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>

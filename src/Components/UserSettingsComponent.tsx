@@ -90,8 +90,8 @@ const SettingsComponent: React.FC<SettingsProps> = ({ user, onUpdateUser }) => {
           <input className='input-field'  type="password" onChange={e => setPassword(e.target.value)} />
         </label>
         <br />
-        <ActionButton onClick={handleSubmit}>Submit</ActionButton>
-        <ActionButton onClick={confirmDelete}>Delete Account</ActionButton>
+        <ActionButton onClick={handleSubmit}>Salvar</ActionButton>
+        <ActionButton onClick={confirmDelete}>Deletar Conta</ActionButton>
       </form>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -11,6 +12,7 @@ const RegisterPage: React.FC = () => {
   const [address, setAddress] = useState('');
   const [phonenumber, setPhoneNumber] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleRegister = () => {
     axios.post('http://localhost:3001/api/auth/register', { 
@@ -23,6 +25,7 @@ const RegisterPage: React.FC = () => {
       .then(response => {
         if (response.data.success) {
           console.log(`Register successful`);
+          navigate('/login');
         } else {
           console.log('Register failed. ');
         }
@@ -39,6 +42,7 @@ const RegisterPage: React.FC = () => {
         <div>
           <label htmlFor="username">Username:</label>
           <input
+          className='input-field'
             type="text"
             id="username"
             value={username}
@@ -48,6 +52,7 @@ const RegisterPage: React.FC = () => {
         <div>
           <label htmlFor="password">Password:</label>
           <input
+          className='input-field'
             type="password"
             id="password"
             value={password}
@@ -57,6 +62,7 @@ const RegisterPage: React.FC = () => {
         <div>
           <label htmlFor="fullname">Full Name:</label>
           <input
+          className='input-field'
             type="text"
             id="fullname"
             value={fullname}
@@ -66,6 +72,7 @@ const RegisterPage: React.FC = () => {
         <div>
           <label htmlFor="email">E-Mail:</label>
           <input
+          className='input-field'
             type="email"
             id="email"
             value={email}
@@ -75,6 +82,7 @@ const RegisterPage: React.FC = () => {
         <div>
           <label htmlFor="address">Address:</label>
           <input
+          className='input-field'
             type="text"
             id="address"
             value={address}
@@ -84,13 +92,14 @@ const RegisterPage: React.FC = () => {
         <div>
           <label htmlFor="phonenumber">Phone Number:</label>
           <input
+          className='input-field'
             type="tel"
             id="phonenumber"
             value={phonenumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
         </div>
-        <button type="button" onClick={handleRegister}>
+        <button className='action-button' type="button" onClick={handleRegister}>
           Register
         </button>
         {error && <p style={{ color: 'red' }}>{error}</p>}
