@@ -23,4 +23,4 @@ node src/server.js
 O servidor estará online quando exibir uma mensagem de confirmação.
 
 ## Uso
-Existem dois logins publicos, um cujo usuario e senha é ``aluno`` e outro que é ``professor``, ou se preferir, pode se registrar, porem não será matriculado em nenhuma disciplina.
+Existem dois logins publicos, um cujo usuario e senha é ``aluno`` e outro que é ``professor``, ou se preferir, pode se registrar
