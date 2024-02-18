@@ -7,14 +7,12 @@ import UserDTO from './DTOs/UserDTO';
 import axios from 'axios';
 import './turmaPage.css';
 
-
 const TurmasComponent: React.FC = () => {
   const location = useLocation();
   const [disciplines, setDisciplines] = useState<DisciplineDTO[]>([]);
   const [classesByDiscipline, setClassesByDiscipline] = useState<{ [key: string]: ClassDTO[] }>({});
   const [participantsByClass, setParticipantsByClass] = useState<{ [key: string]: UserDTO[] }>({});
   const [professorName, setProfessorName] = useState<string>("");
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,64 +28,54 @@ const TurmasComponent: React.FC = () => {
 
         setDisciplines(mappedDisciplines);
 
-        mappedDisciplines.forEach((discipline) => {
+        const fetchDisciplineData = mappedDisciplines.map(async (discipline) => {
           fetchProfessor(discipline.id);
-        });
 
-        const fetchClassesAndParticipants = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
           console.log('buscando classes');
           const classesResponse = await axios.get(`http://localhost:3001/api/data/classDiscilpine/${discipline.id}`);
           const classesData = classesResponse.data;
           console.log(`Classes para disciplina ${discipline.id}:`, classesData);
 
-          // Verifique se classesData é um array antes de mapeá-lo
           if (Array.isArray(classesData)) {
             const mappedClasses: ClassDTO[] = classesData.map((classData: any) =>
               mapResponseToClassDTO(classData)
             );
 
-            const fetchParticipantsbyDiscipline = mappedDisciplines.map(async (discipline: DisciplineDTO) => {
-              console.log("buscando participantes");
-              const participantsResponse = await axios.get(`http://localhost:3001/api/data/participant/${discipline.id}`);
-              const participantsData = participantsResponse.data;
-              console.log(`Participantes para classe ${discipline.id}:`, participantsData);
-
-              const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
-                mapResponseToUserDTO(participantData)
-              );
-
-              return { [discipline.id]: mappedParticipants };
-            });
-
-            const loadedParticipantsByClass = await Promise.all(fetchParticipantsbyDiscipline);
-            const mergedParticipantsByClass = Object.assign({}, ...loadedParticipantsByClass);
-            setParticipantsByClass((prevParticipants) => ({
-              ...prevParticipants,
-              ...mergedParticipantsByClass
+            setClassesByDiscipline(prevState => ({
+              ...prevState,
+              [discipline.id]: mappedClasses
             }));
 
-            return { [discipline.id]: mappedClasses };
+            console.log("buscando participantes");
+            const participantsResponse = await axios.get(`http://localhost:3001/api/data/participant/${discipline.id}`);
+            const participantsData = participantsResponse.data;
+            console.log(`Participantes para classe ${discipline.id}:`, participantsData);
+
+            const mappedParticipants: UserDTO[] = participantsData.map((participantData: any) =>
+              mapResponseToUserDTO(participantData)
+            );
+
+            setParticipantsByClass(prevState => ({
+              ...prevState,
+              [discipline.id]: mappedParticipants
+            }));
           } else {
             console.error("Erro: classesData não é um array.");
-            return {};
           }
         });
 
-        const loadedClassesByDiscipline = await Promise.all(fetchClassesAndParticipants);
-        const mergedClassesByDiscipline = Object.assign({}, ...loadedClassesByDiscipline);
-        setClassesByDiscipline(mergedClassesByDiscipline);
+        await Promise.all(fetchDisciplineData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
 
     const fetchProfessor = async (disciplineId: string) => {
       try {
         const response = await axios.get(`http://localhost:3001/api/data/professor/${disciplineId}`);
         const professorData = response.data;
         if (professorData && professorData.length > 0) {
-          const { professor_name } = professorData[0]; 
+          const { professor_name } = professorData[0];
           setProfessorName(professor_name);
         } else {
           console.error("Error fetching professor data: professor not found");
@@ -97,49 +85,53 @@ const TurmasComponent: React.FC = () => {
       }
     };
 
-
     fetchData();
-    fetchProfessor("disciplineId");
-  }, [location]); 
-  
+  }, [location]);
+
   return (
     <div>
-      {disciplines.map((discipline) => (
-        <div key={discipline.id }>
-          <h1 id='h1-primeiro'>Turma de {discipline.name}</h1>
-          <div>
-            {classesByDiscipline[discipline.id]?.map((classItem) => (
-              <div key={classItem.id}>
-                <p>Professor: {professorName}</p>
-                <p>Horário: { classItem.classTimes}</p>
-                <p>Sala: {classItem.roomNumber}</p>
-                <p>Departamento: {discipline.department}</p>
+      {disciplines.map((discipline) => {
+        if (discipline.id === location.state.disciplineId) {
+          return (
+            <div key={discipline.id}>
+              <h1 id='h1-primeiro'>Turma de {discipline.name}</h1>
+              <div>
+                {classesByDiscipline[discipline.id]?.map((classItem) => (
+                  <div key={classItem.id}>
+                    <p>Professor: {professorName}</p>
+                    <p>Horário: {classItem.classTimes}</p>
+                    <p>Sala: {classItem.roomNumber}</p>
+                    <p>Departamento: {discipline.department}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <h1 id='h1-segundo'>Participantes</h1>
-          <table>
-            <thead>
-              <tr>
-                <th>Id</th>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Numero</th>
-              </tr>
-            </thead>
-            <tbody>
-              {participantsByClass[discipline.id]?.map((participant) => (
-                <tr key={participant.id}>
-                  <td>{participant.id}</td>
-                  <td>{participant.fullname}</td>
-                  <td>{participant.email}</td>
-                  <td>{participant.phonenumber}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
+              <h1 id='h1-segundo'>Participantes</h1>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Id</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Numero</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {participantsByClass[discipline.id]?.map((participant) => (
+                    <tr key={participant.id}>
+                      <td>{participant.id}</td>
+                      <td>{participant.fullname}</td>
+                      <td>{participant.email}</td>
+                      <td>{participant.phonenumber}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        } else {
+          return null;
+        }
+      })}
     </div>
   );
 };
