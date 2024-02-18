@@ -40,23 +40,55 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/auth/register', (req, res) => {
   var { username, password, fullname, email, address, phonenumber } = req.body;
   password = hashString(password);
-  // Your SQLite query to insert user data
-  const sql = 'INSERT INTO users (username, password, fullname, email, address, phonenumber) VALUES (?, ?, ?, ?, ?, ?)';
-  const values = [username, password, fullname, email, address, phonenumber];
 
-  db.run(sql, values, function (err) {
+  // Your SQLite query to insert user data
+  const userSql = 'INSERT INTO users (username, password, fullname, email, address, phonenumber) VALUES (?, ?, ?, ?, ?, ?)';
+  const userValues = [username, password, fullname, email, address, phonenumber];
+
+  // Disciplines to be enrolled automatically
+  const disciplinesToEnroll = ['MAT001', 'MAT002', 'COMP001', 'COMP002', 'MAT003', 'FIS001'];
+
+  db.run(userSql, userValues, function (err) {
     if (err) {
       console.error('SQLite error:', err);
       res.status(500).send('Internal Server Error');
     } else {
+      const userId = this.lastID;
+
+      const enrollmentSql = 'INSERT INTO classEnrollments (classId, studentId, disciplineId) VALUES (?, ?, ?)';
+
+      const classDisciplineMapping = {
+        1: 'MAT001',
+        2: 'MAT002',
+        3: 'COMP001',
+        4: 'COMP002',
+        5: 'MAT003',
+        6: 'FIS001'
+      };
+
+      // CODIGO SOMENTE PARA DEMO
+      // Matricula automaticamente os novos alunos para as 6 disciplinas existentes.
+      disciplinesToEnroll.forEach((disciplineId) => {
+        const classId = Object.keys(classDisciplineMapping).find(key => classDisciplineMapping[key] === disciplineId);
+        const enrollmentValues = [classId, userId, disciplineId];
+        db.run(enrollmentSql, enrollmentValues, function (enrollmentErr) {
+          if (enrollmentErr) {
+            console.error('SQLite error:', enrollmentErr);
+            res.status(500).send('Internal Server Error');
+          }
+        });
+      });
+
       res.status(200).json({
         success: true,
         message: 'Registered successfully',
-        id: this.lastID
+        id: userId
       });
     }
   });
 });
+
+
 
 app.get('/api/data/discipline', (req, res) => {
   const query = 'SELECT * FROM disciplines'
