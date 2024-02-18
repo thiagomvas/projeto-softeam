@@ -124,6 +124,7 @@ const TurmasComponent: React.FC = () => {
                 <th>Id</th>
                 <th>Nome</th>
                 <th>Email</th>
+                <th>Numero</th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +133,7 @@ const TurmasComponent: React.FC = () => {
                   <td>{participant.id}</td>
                   <td>{participant.fullname}</td>
                   <td>{participant.email}</td>
+                  <td>{participant.phonenumber}</td>
                 </tr>
               ))}
             </tbody>

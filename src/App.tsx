@@ -14,6 +14,7 @@ import Login from "./Components/LoginPage";
 import Register from "./Components/RegisterPage";
 import Turmas from "./TurmaPage";
 import UserPage from "./Components/UserPage";
+import React from "react";
 
 function App() {
   return (
