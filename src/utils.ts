@@ -1,4 +1,8 @@
 // utils.ts
+import * as crypto from 'crypto';
+const {
+  createHash,
+} = await import('node:crypto');
 
 import ClassDTO from "./DTOs/ClassDTO";
 import DisciplineDTO from "./DTOs/DisciplineDTO";
@@ -33,6 +37,7 @@ export function mapResponseToDisciplineDTO(responseData: any): DisciplineDTO {
   const disciplineDTO: DisciplineDTO = {
     id: responseData.id,
     name: responseData.name,
+    description: responseData.description,
     department: responseData.department,
   };
   return disciplineDTO;

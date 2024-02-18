@@ -1,7 +1,6 @@
 type ClassEnrollmentDTO = {
-    studentId: number;
-    classId: number;
-    disciplineis: string;
+    studentId: string;
+    classId: string;
     };
 
 export default ClassEnrollmentDTO;

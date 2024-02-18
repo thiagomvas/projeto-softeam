@@ -13,6 +13,7 @@ import {
 import Login from "./Components/LoginPage";
 import Register from "./Components/RegisterPage";
 import Turmas from "./TurmaPage";
+import UserPage from "./Components/UserPage";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/turma" element={<Turmas />} />
+          <Route path="/userpage" element={<UserPage />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>
