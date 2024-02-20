@@ -24,3 +24,6 @@ O servidor estará online quando exibir uma mensagem de confirmação.
 
 ## Uso
 Existem dois logins publicos, um cujo usuario e senha é ``aluno`` e outro que é ``professor``, ou se preferir, pode se registrar
+
+## Swagger
+Para acessar o Swagger, é necessário utilizar o Swagger Editor (https://editor.swagger.io/) e copiar o conteúdo do arquivo swagger.yaml.
