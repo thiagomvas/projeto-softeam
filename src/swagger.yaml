@@ -1,0 +1,352 @@
+
+openapi: 3.0.0
+info:
+  title: API da Minha Aplicação
+  version: 1.0.0
+  description: Documentação da API da Minha Aplicação
+servers:
+  - url: http://localhost:3002
+    description: Servidor Local
+paths:
+  /api/auth/login:
+    post:
+      summary: Autentica um usuário
+      description: Autentica um usuário com base no nome de usuário e senha fornecidos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Sucesso ao autenticar o usuário
+        '401':
+          description: Credenciais inválidas
+        '500':
+          description: Erro interno do servidor
+  /api/auth/register:
+    post:
+      summary: Registrar um novo usuário
+      description: Registrar um novo usuário com as informações fornecidas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                fullname:
+                  type: string
+                email:
+                  type: string
+                address:
+                  type: string
+                phonenumber:
+                  type: string
+      responses:
+        '200':
+          description: Sucesso ao registrar o usuário
+        '500':
+          description: Erro interno do servidor
+  /api/data/discipline:
+    get:
+      summary: Retorna todas as disciplinas
+      description: Retorna uma lista de todas as disciplinas disponíveis.
+      responses:
+        '200':
+          description: Lista de disciplinas recuperada com sucesso
+        '500':
+          description: Erro interno do servidor
+  /api/data/classes:
+    get:
+      summary: Retorna todas as classes
+      description: Retorna uma lista de todas as classes disponíveis.
+      responses:
+        '200':
+          description: Lista de classes recuperada com sucesso
+        '500':
+          description: Erro interno do servidor
+  /api/data/userenrollmentsasclass/{id}:
+    get:
+      summary: Retorna as inscrições do usuário em uma classe
+      description: Retorna as informações de inscrição de um usuário em uma classe específica com base no ID do usuário.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID do usuário
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de inscrições do usuário recuperada com sucesso
+        '404':
+          description: Classe não encontrada
+        '500':
+          description: Erro interno do servidor
+  /api/data/discipline/{id}:
+    get:
+      summary: Retorna uma disciplina por ID
+      description: Retorna os detalhes de uma disciplina com base no ID fornecido.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID da disciplina
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sucesso ao retornar a disciplina
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  department:
+                    type: string
+                  description:
+                    type: string
+        '404':
+          description: Disciplina não encontrada
+        '500':
+          description: Erro interno do servidor
+  /api/data/classes/{id}:
+    get:
+      summary: Retorna uma classe por ID
+      description: Retorna os detalhes de uma classe com base no ID fornecido.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID da classe
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sucesso ao retornar a classe
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  disciplineId:
+                    type: string
+                  professorId:
+                    type: number
+                  classTimes:
+                    type: string
+                  roomNumber:
+                    type: string
+                  name:
+                    type: string
+        '404':
+          description: Classe não encontrada
+        '500':
+          description: Erro interno do servidor
+  /api/data/users:
+    get:
+      summary: Retorna os detalhes do usuário autenticado
+      description: Retorna os detalhes do usuário autenticado com base no token de autorização fornecido no cabeçalho da solicitação.
+      responses:
+        '200':
+          description: Sucesso ao retornar os detalhes do usuário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  fullname:
+                    type: string
+                  password:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  phonenumber:
+                    type: string
+                  address:
+                    type: string
+        '401':
+          description: Não autorizado. Token não fornecido.
+        '404':
+          description: Usuário não encontrado para o token fornecido
+        '500':
+          description: Erro interno do servidor
+  /api/data/users/{id}:
+    put:
+      summary: Atualiza um usuário
+      description: Atualiza os detalhes de um usuário com base no ID fornecido.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID do usuário
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullname:
+                  type: string
+                password:
+                  type: string
+                email:
+                  type: string
+                role:
+                  type: string
+                phonenumber:
+                  type: string
+                address:
+                  type: string
+      responses:
+        '200':
+          description: Sucesso ao atualizar o usuário
+        '401':
+          description: Não autorizado. Token não fornecido.
+        '404':
+          description: Usuário não encontrado para o ID fornecido
+        '500':
+          description: Erro interno do servidor
+    delete:
+      summary: Exclui um usuário
+      description: Exclui um usuário com base no ID fornecido.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID do usuário
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sucesso ao excluir o usuário
+        '401':
+          description: Não autorizado. Token não fornecido.
+        '404':
+          description: Usuário não encontrado para o ID fornecido
+        '500':
+          description: Erro interno do servidor
+  /api/data/professor/{disciplineId}:
+    get:
+      summary: Retorna o nome do professor de uma disciplina
+      description: Retorna o nome do professor associado a uma disciplina com base no ID da disciplina fornecido.
+      parameters:
+        - in: path
+          name: disciplineId
+          required: true
+          description: ID da disciplina
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sucesso ao retornar o nome do professor da disciplina
+        '404':
+          description: Professor não encontrado para a disciplina fornecida
+        '500':
+          description: Erro interno do servidor
+  /api/data/userfullname/{id}:
+    get:
+      summary: Retorna o nome completo de um usuário
+      description: Retorna o nome completo de um usuário com base no ID do usuário fornecido.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID do usuário
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sucesso ao retornar o nome completo do usuário
+        '404':
+          description: Usuário não encontrado
+        '500':
+          description: Erro interno do servidor
+  /api/data/participant/{disciplineId}:
+    get:
+      summary: Retorna os participantes de uma disciplina
+      description: Retorna os participantes (alunos inscritos) de uma disciplina com base no ID da disciplina fornecido.
+      parameters:
+        - in: path
+          name: disciplineId
+          required: true
+          description: ID da disciplina
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sucesso ao retornar os participantes da disciplina
+        '404':
+          description: Nenhum participante encontrado para a disciplina fornecida
+        '500':
+          description: Erro interno do servidor
+  /api/data/classDiscilpine/{disciplineId}:
+    get:
+      summary: Retorna as classes de uma disciplina
+      description: Retorna as classes associadas a uma disciplina com base no ID da disciplina fornecido.
+      parameters:
+        - in: path
+          name: disciplineId
+          required: true
+          description: ID da disciplina
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sucesso ao retornar as classes da disciplina
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    disciplineId:
+                      type: string
+                    professorId:
+                      type: number
+                    classTimes:
+                      type: string
+                    roomNumber:
+                      type: string
+                    name:
+                      type: string
+        '404':
+          description: Nenhuma classe encontrada para a disciplina fornecida
+        '500':
+          description: Erro interno do servidor
+  /api/tables:
+    get:
+      summary: Retorna os nomes de todas as tabelas no banco de dados
+      description: Retorna uma lista com os nomes de todas as tabelas presentes no banco de dados.
+      responses:
+        '200':
+          description: Sucesso ao retornar os nomes das tabelas
+        '500':
+          description: Erro interno do servidor
